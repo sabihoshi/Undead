@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Any
+from typing import Any
 
 from Undead import *
 from rich import print
@@ -13,59 +13,30 @@ def print_fancy_box(content: Table) -> None:
     print(panel)
 
 
-def print_menu_options() -> None:
-    table = Table.grid(padding=(0, 1), expand=False)
-    table.add_column(justify="left", style="bold magenta")
-    table.add_column(justify="left", style="bold cyan")
-
-    table.add_row("1. Create Undead", "2. Command Undead")
-    table.add_row("3. Display Undead", "4. Quit")
-
-    print_fancy_box(table)
-
-
-def print_sub_menu_options(submenu: str) -> None:
-    table = Table.grid(padding=(0, 1), expand=False)
-    table.add_column(justify="left", style="bold green")
-    table.add_column(justify="left", style="bold yellow")
-
-    if submenu == "create_undead":
-        table.add_row("a. Zombie", "b. Vampire")
-        table.add_row("c. Skeleton", "d. Ghost")
-    elif submenu == "command_undead":
-        table.add_row("1. Ability 1", "2. Ability 2")
-
-    print_fancy_box(table)
-
-
-def battle(attacker: Undead, target: Undead) -> None:
-    damage = attacker.attack()
-    target.set_hp(target.get_hp() - int(damage))
-    if isinstance(target, Ghost):
-        target.receive_damage(damage)
-    if target.get_hp() <= 0:
-        target.set_hp(0)
-        target.is_dead(True)
-
-    print(f"{attacker.get_name()} attacked {target.get_name()} for {damage} damage.")
-    print(f"{target.get_name()} now has {target.get_hp()} HP.")
-    if target.is_dead():
-        print(f"{target.get_name()} is dead.")
-    print()
-
-
 def create_undead() -> Any | None:
     undead_types = {
         "a": Zombie,
         "b": Vampire,
         "c": Skeleton,
-        "d": Ghost
+        "d": Ghost,
+        "e": Lich,
+        "f": Mummy
     }
 
     print("Create Undead:")
-    print_sub_menu_options("create_undead")
-    choice = input("Enter your choice: ").lower()
 
+    table = Table.grid(padding=(0, 1), expand=False)
+
+    table.add_column(justify="left", style="bold green")
+    table.add_column(justify="left", style="bold yellow")
+
+    table.add_row("a. Zombie", "b. Vampire")
+    table.add_row("c. Skeleton", "d. Ghost")
+    table.add_row("e. Lich", "f. Mummy")
+
+    print_fancy_box(table)
+
+    choice = input("Enter your choice: ").lower()
     if choice in undead_types:
         name = input("Enter a custom name or press Enter to use the default name: ")
         if name:
@@ -79,19 +50,57 @@ def create_undead() -> Any | None:
 
 def command_undead(undead: Undead, undead_list: List[Undead]) -> None:
     print(f"Command {undead.get_name()}:")
-    print_sub_menu_options("command_undead")
 
+    table = Table.grid(padding=(0, 1), expand=False)
+    table.add_column(justify="left", style="bold green")
+    table.add_column(justify="left", style="bold yellow")
+
+    abilities = undead.list_abilities()
+    for i in range(len(abilities)):
+        ability = abilities[i]
+        table.add_row(f"[{i + 1}] {ability.get_name()}", ability.get_description())
+
+    print_fancy_box(table)
+
+    ability = undead.get_ability()
+    display_undead(undead_list)
+    while True:
+        try:
+            index = int(input("Choose an undead: ")) - 1
+            chosen_undead = undead_list[index]
+            ability.use_ability(undead, chosen_undead)
+            break
+        except (IndexError, TypeError):
+            print("Invalid choice, try again.")
 
 
 def display_undead(undead_list: List[Undead]) -> None:
-    for undead in undead_list:
-        print(f"{undead.get_name()} - HP: {undead.get_hp()} - State: {'Alive' if not undead.is_dead() else 'Dead'}")
+    table = Table.grid(padding=(0, 1), expand=False)
+
+    table.add_column(justify="left", style="bold magenta")
+    table.add_column(justify="left", style="bold cyan")
+    table.add_column(justify="left", style="bold red")
+
+    for index, undead in enumerate(undead_list):
+        table.add_row(f"[{index + 1}]. {undead.get_name()}",
+                      f"{'Alive' if not undead.is_dead() else 'Dead'}",
+                      f"{undead.get_hp()}")
+
+    print_fancy_box(table)
 
 
 def game_menu() -> None:
     undead_list = []
     while True:
-        print_menu_options()
+        table = Table.grid(padding=(0, 1), expand=False)
+
+        table.add_column(justify="left", style="bold magenta")
+        table.add_column(justify="left", style="bold cyan")
+
+        table.add_row("1. Create Undead", "2. Command Undead")
+        table.add_row("3. Display Undead", "4. Quit")
+
+        print_fancy_box(table)
         choice = int(input("Enter your choice: "))
 
         if choice == 1:
@@ -100,12 +109,16 @@ def game_menu() -> None:
                 undead_list.append(new_undead)
         elif choice == 2:
             if undead_list:
-                for index, undead in enumerate(undead_list):
-                    print(f"{index}. {undead.get_name()} - {'Alive' if not undead.is_dead() else 'Dead'}")
-                undead_index = int(input("Choose an undead by index to command: "))
-                print_sub_menu_options("command_undead")
-                choice = int(input("Enter your choice: "))
-                command_undead(undead_list[undead_index], undead_list, choice)
+                display_undead(undead_list)
+                while True:
+                    try:
+                        undead_index = int(input("Choose an undead by index to command: ")) - 1
+                        chosen = undead_list[undead_index]
+                        list_except_chosen = [c for c in undead_list if c is not chosen]
+
+                        command_undead(chosen, list_except_chosen)
+                    except (IndexError, TypeError):
+                        print("Invalid choice, try again.")
             else:
                 print("No undead have been created.")
         elif choice == 3:

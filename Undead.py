@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Union, List
 
+from rich import print
+from rich.panel import Panel
+from rich.table import Table
+
 
 class Ability:
     def __init__(self, name: str, description: str, method: callable):
@@ -19,10 +23,22 @@ class Ability:
 
     def use_ability(self, undead: "Undead", other_undead: "Undead") -> None:
         self._method(other_undead)
-        print(f"{self._name} used on {other_undead.get_name()}")
-        print(f"{self._name} description: {self._description}")
-        print(f"{undead.get_name()} HP: {undead.get_hp()}")
-        print(f"{other_undead.get_name()} HP: {other_undead.get_hp()}")
+
+        table = Table.grid(padding=(0, 1), expand=False)
+
+        table.add_row(f"{self._name} used on {other_undead.get_name()}")
+        table.add_row(f"Description: {self._description}")
+        table.add_row(f"{undead.get_name()} HP: {undead.get_hp()}")
+        table.add_row(f"{other_undead.get_name()} HP: {other_undead.get_hp()}")
+
+        if undead.is_dead():
+            table.add_row(f"{undead.get_name()} is now dead.")
+
+        if other_undead.is_dead():
+            table.add_row(f"{other_undead.get_name()} is now dead.")
+
+        panel = Panel(table, expand=False)
+        print(panel)
 
 
 class Undead(ABC):
@@ -30,7 +46,7 @@ class Undead(ABC):
         self._hp: float = hp if hp else 100
         self._name: str = name if name else "Undead"
         self._is_dead: bool = False
-        self._abilities: List[Ability] = []
+        self._abilities: List[dict] = []
 
     def is_dead(self, dead: Optional[bool] = None) -> Union[bool, None]:
         if dead is None:
@@ -53,9 +69,16 @@ class Undead(ABC):
         else:
             self._hp = self._hp * multiplier
 
-    def list_abilities(self) -> None:
-        for ability in self._abilities:
-            print(f"{ability.get_name()}: {ability.get_description()}")
+    def list_abilities(self) -> list[Ability]:
+        return [Ability(a["name"], a["description"], a["method"]) for a in self._abilities]
+
+    def get_ability(self) -> Ability:
+        while True:
+            try:
+                index = int(input("Choose an ability: ")) - 1
+                return self.list_abilities()[index]
+            except (IndexError, TypeError):
+                print("Invalid choice, try again.")
 
 
 class Zombie(Undead):
@@ -68,7 +91,7 @@ class Zombie(Undead):
 
     def __init__(self, name: str = "Zombie"):
         super().__init__(name)
-        super()._abilities = [
+        self._abilities = [
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 50% of its HP.",
@@ -101,7 +124,7 @@ class Vampire(Undead):
 
     def __init__(self, name: str = "Vampire"):
         super().__init__(name, hp=120)
-        super()._abilities = [
+        self._abilities = [
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to its HP.",
@@ -133,7 +156,7 @@ class Skeleton(Undead):
 
     def __init__(self, name: str = "Skeleton"):
         super().__init__(name, hp=80)
-        super()._abilities = [
+        self._abilities = [
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 70% of its HP.",
@@ -158,7 +181,7 @@ class Ghost(Undead):
     def __init__(self, name: str = "Ghost"):
         super().__init__(name)
         self.set_hp(multiplier=0.5)
-        super()._abilities = [
+        self._abilities = [
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 20% of its HP.",
@@ -190,7 +213,7 @@ class Lich(Undead):
 
     def __init__(self, name: str = "Lich"):
         super().__init__(name)
-        super()._abilities = [
+        self._abilities = [
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 70% of its HP.",
@@ -225,7 +248,7 @@ class Mummy(Undead):
 
     def __init__(self, name: str = "Mummy"):
         super().__init__(name)
-        super()._abilities = [
+        self._abilities = [
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 50% of its HP plus 10% of the undead HP.",
