@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from Test import Test
 from Undead import *
 from rich import print
 from rich.panel import Panel
@@ -62,13 +63,13 @@ def command_undead(undead: Undead, undead_list: List[Undead]) -> None:
 
     print_fancy_box(table)
 
-    ability = undead.get_ability()
+    ability = undead.prompt_ability()
     display_undead(undead_list)
     while True:
         try:
             index = int(input("Choose an undead: ")) - 1
             chosen_undead = undead_list[index]
-            ability.use_ability(undead, chosen_undead)
+            ability.use_ability(chosen_undead)
             break
         except (IndexError, TypeError):
             print("Invalid choice, try again.")
@@ -98,16 +99,17 @@ def game_menu() -> None:
         table.add_column(justify="left", style="bold cyan")
 
         table.add_row("1. Create Undead", "2. Command Undead")
-        table.add_row("3. Display Undead", "4. Quit")
+        table.add_row("3. Display Undead", "4. Auto Test")
+        table.add_row("", "Q. Quit")
 
         print_fancy_box(table)
-        choice = int(input("Enter your choice: "))
+        choice = input("Enter your choice: ")
 
-        if choice == 1:
+        if choice == '1':
             new_undead = create_undead()
             if new_undead is not None:
                 undead_list.append(new_undead)
-        elif choice == 2:
+        elif choice == '2':
             if undead_list:
                 display_undead(undead_list)
                 while True:
@@ -121,12 +123,14 @@ def game_menu() -> None:
                         print("Invalid choice, try again.")
             else:
                 print("No undead have been created.")
-        elif choice == 3:
+        elif choice == '3':
             if undead_list:
                 display_undead(undead_list)
             else:
                 print("No undead have been created.")
-        elif choice == 4:
+        elif choice == '4':
+            Test().test()
+        elif choice == 'q':
             break
         else:
             print("Invalid choice.")

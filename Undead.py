@@ -1,5 +1,8 @@
-from abc import ABC, abstractmethod
-from typing import Optional, Union, List
+from __future__ import annotations
+
+from abc import ABC
+from enum import Enum
+from typing import Optional, List, Callable
 
 from rich import print
 from rich.panel import Panel
@@ -7,10 +10,17 @@ from rich.table import Table
 
 
 class Ability:
-    def __init__(self, name: str, description: str, method: callable):
-        self._name = name
-        self._description = description
-        self._method = method
+    def __init__(self, undead: "Undead", name: str, description: str,
+                 method: Callable[["Undead"], float], ability_type: AbilityType):
+        self._undead: "Undead" = undead
+        self._name: str = name
+        self._description: str = description
+        self._method: Callable[["Undead"], float] = method
+        self._type: Ability.AbilityType = ability_type
+
+    class AbilityType(Enum):
+        ATTACK = "Attack"
+        HEAL = "Heal"
 
     def get_name(self) -> str:
         return self._name
@@ -18,24 +28,34 @@ class Ability:
     def get_description(self) -> str:
         return self._description
 
-    def get_method(self) -> callable:
+    def get_method(self) -> Callable[["Undead"], float]:
         return self._method
 
-    def use_ability(self, undead: "Undead", other_undead: "Undead") -> None:
-        self._method(other_undead)
+    def use_ability(self, target: "Undead") -> None:
+        amount = self._method(target)
 
         table = Table.grid(padding=(0, 1), expand=False)
 
-        table.add_row(f"{self._name} used on {other_undead.get_name()}")
-        table.add_row(f"Description: {self._description}")
-        table.add_row(f"{undead.get_name()} HP: {undead.get_hp()}")
-        table.add_row(f"{other_undead.get_name()} HP: {other_undead.get_hp()}")
+        table.add_column(style="bold cyan", justify="right")
+        table.add_column(style="magenta")
 
-        if undead.is_dead():
-            table.add_row(f"{undead.get_name()} is now dead.")
+        table.add_row("Ability",
+                      f"{self._undead.get_name()} used {self._name} on {target.get_name() if target is not self._undead else 'itself'}")
+        table.add_row("Description", self._description)
+        table.add_row(self._type.value, f"{amount} HP")
 
-        if other_undead.is_dead():
-            table.add_row(f"{other_undead.get_name()} is now dead.")
+        table.add_row()
+
+        # HP Values
+        table.add_row(f"{self._undead.get_name()} HP", f"{self._undead.get_hp()}")
+        if target is not self._undead:
+            table.add_row(f"{target.get_name()} HP", f"{target.get_hp()}")
+
+        # Death Values
+        if self._undead.is_dead():
+            table.add_row("", f"{self._undead.get_name()} is now dead.")
+        if target.is_dead() and target is not self._undead:
+            table.add_row("", f"{target.get_name()} is now dead.")
 
         panel = Panel(table, expand=False)
         print(panel)
@@ -48,7 +68,7 @@ class Undead(ABC):
         self._is_dead: bool = False
         self._abilities: List[dict] = []
 
-    def is_dead(self, dead: Optional[bool] = None) -> Union[bool, None]:
+    def is_dead(self, dead: Optional[bool] = None) -> bool | None:
         if dead is None:
             return self._is_dead
         else:
@@ -69,16 +89,52 @@ class Undead(ABC):
         else:
             self._hp = self._hp * multiplier
 
-    def list_abilities(self) -> list[Ability]:
-        return [Ability(a["name"], a["description"], a["method"]) for a in self._abilities]
+    def take_damage(self, damage: float) -> float:
+        self._hp -= damage
+        self._hp = round(self._hp, 2)
+        self._hp = 0 if self._hp < 0 else self._hp
+        self.is_dead(self._hp <= 0)
+        return damage
 
-    def get_ability(self) -> Ability:
+    def heal(self, heal: float) -> float:
+        self._hp += heal
+        self._hp = round(self._hp, 2)
+        self._hp = 0 if self._hp < 0 else self._hp
+        self.is_dead(self._hp <= 0)
+        return heal
+
+    def list_abilities(self) -> list[Ability]:
+        return [Ability(self, a["name"], a["description"], a["method"], a["type"]) for a in self._abilities]
+
+    def prompt_ability(self) -> Ability:
         while True:
             try:
                 index = int(input("Choose an ability: ")) - 1
                 return self.list_abilities()[index]
             except (IndexError, TypeError):
                 print("Invalid choice, try again.")
+
+    def get_ability(self, index: int = None, name: str = None):
+        if index:
+            return self.list_abilities()[index]
+        elif name:
+            return [a for a in self.list_abilities() if a.get_name().casefold() == name.casefold()][0]
+        else:
+            return self.prompt_ability()
+
+    def print_details(self):
+        table = Table.grid(padding=(0, 1), expand=False)
+
+        table.add_column(style="cyan")
+        table.add_column(style="magenta")
+        table.add_column(style="green")
+
+        table.add_row("Name", self._name)
+        table.add_row("HP", f"{self._hp}")
+        table.add_row("Dead", f"{self._is_dead}")
+
+        panel = Panel(table, expand=False)
+        print(panel)
 
 
 class Zombie(Undead):
@@ -95,23 +151,24 @@ class Zombie(Undead):
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 50% of its HP.",
-                "method": self.attack
+                "method": self.attack,
+                "type": Ability.AbilityType.ATTACK
             },
             {
                 "name": "Eat",
                 "description": "Eat another undead to gain 50% of its HP.",
-                "method": self.eat
+                "method": self.eat,
+                "type": Ability.AbilityType.HEAL
             }
         ]
 
     def attack(self, other_undead: 'Undead') -> float:
         damage = self.get_hp() * 0.5 if self.get_hp() > 50 else 0
-        other_undead.set_hp(other_undead.get_hp() - damage)
-        return damage
+        return other_undead.take_damage(damage)
 
-    def eat(self, other_undead: 'Undead') -> None:
-        self.set_hp(self.get_hp() + int(other_undead.get_hp() * 0.5))
-        other_undead.set_hp(int(other_undead.get_hp() * 0.5))
+    def eat(self, other_undead: 'Undead') -> float:
+        heal = other_undead.get_hp() * 0.5
+        return self.heal(heal)
 
 
 class Vampire(Undead):
@@ -128,23 +185,24 @@ class Vampire(Undead):
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to its HP.",
-                "method": self.attack
+                "method": self.attack,
+                "type": Ability.AbilityType.ATTACK
             },
             {
                 "name": "Bite",
                 "description": "Bite another undead to gain 80% of its HP.",
-                "method": self.bite
+                "method": self.bite,
+                "type": Ability.AbilityType.HEAL
             }
         ]
 
     def attack(self, other_undead: 'Undead') -> float:
-        damage = self.get_hp()
-        other_undead.set_hp(other_undead.get_hp() - damage)
-        return damage
+        damage = self.get_hp() if self.get_hp() > 0 else 0
+        return other_undead.take_damage(damage)
 
-    def bite(self, other_undead: 'Undead') -> None:
-        self.set_hp(self.get_hp() + int(other_undead.get_hp() * 0.8))
-        other_undead.set_hp(int(other_undead.get_hp() * 0.8))
+    def bite(self, other_undead: 'Undead') -> float:
+        heal = other_undead.get_hp() * 0.8
+        return self.heal(heal)
 
 
 class Skeleton(Undead):
@@ -160,14 +218,14 @@ class Skeleton(Undead):
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 70% of its HP.",
-                "method": self.attack
+                "method": self.attack,
+                "type": Ability.AbilityType.ATTACK
             }
         ]
 
     def attack(self, other_undead: 'Undead') -> float:
         damage = self.get_hp() * 0.7
-        other_undead.set_hp(other_undead.get_hp() - damage)
-        return damage
+        return other_undead.take_damage(damage)
 
 
 class Ghost(Undead):
@@ -175,7 +233,7 @@ class Ghost(Undead):
     Ghost are like virtual version of an undead. It inherits all the characteristics that the undead has. Ghost may
     attack other undead. Its attack damage is only 20% of its HP. Ghost only receives 10% of the damage being done to
     it. If ghost HP is reduced to 0, it will be perished. Ghost initial HP would be the half of the initial HP of the
-    undead. Ghost can haunt which increases its HP by the 10% of the undead being haunt.
+    undead. Ghost can haunt which increases its HP by the 10% of the undead being haunted.
     """
 
     def __init__(self, name: str = "Ghost"):
@@ -185,23 +243,26 @@ class Ghost(Undead):
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 20% of its HP.",
-                "method": self.attack
+                "method": self.attack,
+                "type": Ability.AbilityType.ATTACK
             },
             {
                 "name": "Haunt",
                 "description": "Haunt another undead to gain 10% of its HP.",
-                "method": self.haunt
+                "method": self.haunt,
+                "type": Ability.AbilityType.HEAL
             }
         ]
 
+    def take_damage(self, damage: float) -> float:
+        return super().take_damage(damage * 0.1)
+
     def attack(self, other_undead: 'Undead') -> float:
         damage = self.get_hp() * 0.2
-        other_undead.set_hp(other_undead.get_hp() - damage)
-        return damage
+        return other_undead.take_damage(damage)
 
-    def haunt(self, other_undead: 'Undead') -> None:
-        self.set_hp(self.get_hp() + int(other_undead.get_hp() * 0.1))
-        other_undead.set_hp(int(other_undead.get_hp() * 0.9))
+    def haunt(self, other_undead: 'Undead') -> float:
+        return self.heal(other_undead.get_hp() * 0.1)
 
 
 class Lich(Undead):
@@ -217,23 +278,24 @@ class Lich(Undead):
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 70% of its HP.",
-                "method": self.attack
+                "method": self.attack,
+                "type": Ability.AbilityType.ATTACK
             },
             {
                 "name": "Cast Spell",
                 "description": "Cast a spell on another undead to gain 10% of its HP.",
-                "method": self.cast_spell
+                "method": self.cast_spell,
+                "type": Ability.AbilityType.HEAL
             }
         ]
 
     def attack(self, other_undead: 'Undead') -> float:
-        damage = self.get_hp() * 0.7
-        other_undead.set_hp(other_undead.get_hp() - damage)
-        return damage
+        damage = self.get_hp() * 0.7 if self.get_hp() > 0 else 0
+        return other_undead.take_damage(damage)
 
-    def cast_spell(self, other_undead: 'Undead') -> None:
-        self.set_hp(self.get_hp() + int(other_undead.get_hp() * 0.1))
-        other_undead.set_hp(int(other_undead.get_hp() * 0.9))
+    def cast_spell(self, other_undead: 'Undead') -> float:
+        heal = other_undead.get_hp() * 0.1
+        return self.heal(heal)
 
     def is_dead(self, dead: Optional[bool] = None) -> bool:
         return True
@@ -252,19 +314,20 @@ class Mummy(Undead):
             {
                 "name": "Attack",
                 "description": "Attack another undead with damage equal to 50% of its HP plus 10% of the undead HP.",
-                "method": self.attack
+                "method": self.attack,
+                "type": Ability.AbilityType.ATTACK
             },
             {
                 "name": "Revive",
                 "description": "Revive itself to its initial HP.",
-                "method": self.revive
+                "method": self.revive,
+                "type": Ability.AbilityType.HEAL
             }
         ]
 
     def attack(self, other_undead: 'Undead') -> float:
         damage = self.get_hp() * 0.5 + other_undead.get_hp() * 0.1
-        other_undead.set_hp(other_undead.get_hp() - damage)
-        return damage
+        return other_undead.take_damage(damage)
 
-    def revive(self, other_undead: 'Undead') -> None:
-        self.set_hp(100)
+    def revive(self, other_undead: 'Undead') -> float:
+        return self.heal(100)
