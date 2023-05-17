@@ -4,9 +4,6 @@ from typing import Any
 
 from Test import Test
 from Undead import *
-from rich import print
-from rich.panel import Panel
-from rich.table import Table
 
 
 def print_fancy_box(content: Table) -> None:

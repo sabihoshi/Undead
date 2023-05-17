@@ -1,11 +1,11 @@
 import math
-from time import sleep
-from typing import List, Dict
+from typing import Dict
 
-from Undead import Undead, Mummy, Ghost, Vampire
 from rich import print
 from rich.panel import Panel
 from rich.table import Table
+
+from Undead import Undead, Mummy, Ghost, Vampire
 
 
 def print_fancy_box(content: Table) -> None:
