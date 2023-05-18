@@ -265,11 +265,11 @@ class Ghost(Undead):
         return self.heal(other_undead.get_hp() * 0.1)
 
 
-class Lich(Undead):
+class Lich(Skeleton):
     """
     Lich is a kind of undead like skeleton, but it has reach immortality. Lich has another ability. It could cast a
     spell on undead which gets the 10% of their HP and add it to its HP. Lich attack damage is equal to 70 percent of
-    its Hp. If Lich HP is reduced to 0, it cannot attack anymore but still alive.
+    its HP. If Lich HP is reduced to 0, it cannot attack anymore but still alive.
     """
 
     def __init__(self, name: str = "Lich"):
@@ -301,7 +301,7 @@ class Lich(Undead):
         return True
 
 
-class Mummy(Undead):
+class Mummy(Zombie):
     """
     Mummy is an undead like zombie, but it does not eat its own kind. Mummy can attack other undead; its attack
     damage is equal to the half of its HP plus 10% of the undead HP. If its HP reached 0, it will die and needs to be
@@ -322,6 +322,12 @@ class Mummy(Undead):
                 "description": "Revive itself to its initial HP.",
                 "method": self.revive,
                 "type": Ability.AbilityType.HEAL
+            },
+            {
+                "name": "Eat",
+                "description": "Eat another undead to gain 50% of its HP.",
+                "method": self.eat,
+                "type": Ability.AbilityType.HEAL
             }
         ]
 
@@ -331,3 +337,6 @@ class Mummy(Undead):
 
     def revive(self, other_undead: 'Undead') -> float:
         return self.heal(100)
+
+    def eat(self, other_undead: 'Undead') -> float:
+        return 0 if isinstance(other_undead, Mummy) else super().eat(other_undead)
