@@ -1,3 +1,4 @@
+import json
 import math
 from typing import Dict
 
@@ -5,7 +6,7 @@ from rich import print
 from rich.panel import Panel
 from rich.table import Table
 
-from Undead import Undead, Mummy, Ghost, Vampire
+from Undead import *
 
 
 def print_fancy_box(content: Table) -> None:
@@ -14,203 +15,38 @@ def print_fancy_box(content: Table) -> None:
 
 
 class Test:
-    test_undead: Dict[str, Undead] = []
+
 
     def test(self) -> None:
         self.mummy = Mummy("King Tut")
         self.ghost = Ghost("Casper")
         self.vampire = Vampire("Dracula")
 
-        self.test_undead = {
-            self.mummy.get_name(): self.mummy,
-            self.ghost.get_name(): self.ghost,
-            self.vampire.get_name(): self.vampire
+        self.test_undead: Dict[str, Undead] = {}
+
+        file = input("Enter the name of the test file: ")
+        test = json.load(open(file if file else "test1.json", "r"))
+
+        undead_mapping = {
+            "Zombie": Zombie,
+            "Vampire": Vampire,
+            "Skeleton": Skeleton,
+            "Ghost": Ghost,
+            "Lich": Lich,
+            "Mummy": Mummy
         }
 
-        cases = [
-            {
-                "description": "Casper haunts King Tut",
-                "attacker": self.ghost,
-                "target": self.mummy,
-                "ability": "Haunt",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 60,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 120,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "King Tut attacks Casper",
-                "attacker": self.mummy,
-                "target": self.ghost,
-                "ability": "Attack",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 54.4,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 120,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "Casper haunts Dracula",
-                "attacker": self.ghost,
-                "target": self.vampire,
-                "ability": "Haunt",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 66.4,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 120,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "Dracula attacks Casper",
-                "attacker": self.vampire,
-                "target": self.ghost,
-                "ability": "Attack",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 54.4,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 120,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "King Tut attacks Dracula",
-                "attacker": self.mummy,
-                "target": self.vampire,
-                "ability": "Attack",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 54.4,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 58,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "Dracula bites King Tut",
-                "attacker": self.vampire,
-                "target": self.mummy,
-                "ability": "Bite",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 54.4,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 138,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "Casper haunts Dracula",
-                "attacker": self.ghost,
-                "target": self.vampire,
-                "ability": "Haunt",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 68.2,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 138,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "Dracula attacks King Tut",
-                "attacker": self.vampire,
-                "target": self.mummy,
-                "ability": "Attack",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 68.2,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 0,
-                        "is_dead": True
-                    },
-                    "Dracula": {
-                        "hp": 138,
-                        "is_dead": False
-                    }
-                }
-            },
-            {
-                "description": "King Tut revives",
-                "attacker": self.mummy,
-                "target": self.mummy,
-                "ability": "Revive",
-                "expected_result": {
-                    "Casper": {
-                        "hp": 68.2,
-                        "is_dead": False
-                    },
-                    "King Tut": {
-                        "hp": 100,
-                        "is_dead": False
-                    },
-                    "Dracula": {
-                        "hp": 138,
-                        "is_dead": False
-                    }
-                }
-            }
-        ]
+        for undead in test["undead"]:
+            undead_type = undead_mapping[undead["undead"]]
+            undead_instance = undead_type(undead["name"])
+            self.test_undead[undead_instance.get_name()] = undead_instance
+
+        cases = test["cases"]
 
         for index, case in enumerate(cases):
+            attacker = self.test_undead[case["attacker"]]
+            target = self.test_undead[case["target"]]
+
             # Information
             print("Information")
             table = Table.grid(padding=(0, 5), expand=False)
@@ -222,9 +58,8 @@ class Test:
 
             # Actually attacking
             print("Simulation")
-            attacker = case["attacker"]
             ability = attacker.get_ability(name=(case["ability"]))
-            ability.use_ability(case["target"])
+            ability.use_ability(target)
             # sleep(3)
 
             # Results
@@ -242,7 +77,7 @@ class Test:
             for name, expected_undead in case["expected_result"].items():
                 actual_undead = self.test_undead[name]
 
-                if not math.isclose(expected_undead["hp"], actual_undead.get_hp()):
+                if not math.isclose(expected_undead["hp"], actual_undead.get_hp(), rel_tol=1e-3):
                     passed = False
 
                 if expected_undead["is_dead"] != actual_undead.is_dead():

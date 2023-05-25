@@ -32,7 +32,7 @@ class Ability:
         return self._method
 
     def use_ability(self, target: "Undead") -> None:
-        amount = self._method(target)
+        amount = round(self._method(target), 2)
 
         table = Table.grid(padding=(0, 1), expand=False)
 
@@ -84,10 +84,8 @@ class Undead(ABC):
         self._name = name
 
     def set_hp(self, hp: Optional[float] = None, multiplier: Optional[float] = None) -> None:
-        if multiplier is None:
-            self._hp = hp
-        else:
-            self._hp = self._hp * multiplier
+        self._hp = hp if hp else self._hp
+        self._hp *= multiplier if multiplier else 1
 
     def take_damage(self, damage: float) -> float:
         self._hp -= damage
@@ -114,7 +112,7 @@ class Undead(ABC):
             except (IndexError, TypeError):
                 print("Invalid choice, try again.")
 
-    def get_ability(self, index: int = None, name: str = None):
+    def get_ability(self, index: Optional[int] = None, name: Optional[str] = None):
         if index:
             return self.list_abilities()[index]
         elif name:
@@ -298,7 +296,7 @@ class Lich(Skeleton):
         return self.heal(heal)
 
     def is_dead(self, dead: Optional[bool] = None) -> bool:
-        return True
+        return False
 
 
 class Mummy(Zombie):

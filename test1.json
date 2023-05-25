@@ -1,0 +1,198 @@
+{
+    "undead": [
+        {
+            "name": "King Tut",
+            "undead": "Mummy"
+        },
+        {
+            "name": "Casper",
+            "undead": "Ghost"
+        },
+        {
+            "name": "Dracula",
+            "undead": "Vampire"
+        }
+    ],
+    "cases": [
+        {
+            "description": "Casper haunts King Tut",
+            "attacker": "Casper",
+            "target": "King Tut",
+            "ability": "Haunt",
+            "expected_result": {
+                "Casper": {
+                    "hp": 60,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 120,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "King Tut attacks Casper",
+            "attacker": "King Tut",
+            "target": "Casper",
+            "ability": "Attack",
+            "expected_result": {
+                "Casper": {
+                    "hp": 54.4,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 120,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Casper haunts Dracula",
+            "attacker": "Casper",
+            "target": "Dracula",
+            "ability": "Haunt",
+            "expected_result": {
+                "Casper": {
+                    "hp": 66.4,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 120,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Dracula attacks Casper",
+            "attacker": "Dracula",
+            "target": "Casper",
+            "ability": "Attack",
+            "expected_result": {
+                "Casper": {
+                    "hp": 54.4,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 120,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "King Tut attacks Dracula",
+            "attacker": "King Tut",
+            "target": "Dracula",
+            "ability": "Attack",
+            "expected_result": {
+                "Casper": {
+                    "hp": 54.4,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 58,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Dracula bites King Tut",
+            "attacker": "Dracula",
+            "target": "King Tut",
+            "ability": "Bite",
+            "expected_result": {
+                "Casper": {
+                    "hp": 54.4,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 138,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Casper haunts Dracula",
+            "attacker": "Casper",
+            "target": "Dracula",
+            "ability": "Haunt",
+            "expected_result": {
+                "Casper": {
+                    "hp": 68.2,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 138,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Dracula attacks King Tut",
+            "attacker": "Dracula",
+            "target": "King Tut",
+            "ability": "Attack",
+            "expected_result": {
+                "Casper": {
+                    "hp": 68.2,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 0,
+                    "is_dead": true
+                },
+                "Dracula": {
+                    "hp": 138,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "King Tut revives",
+            "attacker": "King Tut",
+            "target": "King Tut",
+            "ability": "Revive",
+            "expected_result": {
+                "Casper": {
+                    "hp": 68.2,
+                    "is_dead": false
+                },
+                "King Tut": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Dracula": {
+                    "hp": 138,
+                    "is_dead": false
+                }
+            }
+        }
+    ]
+}

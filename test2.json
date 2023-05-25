@@ -1,0 +1,220 @@
+{
+    "undead": [
+        {
+            "name": "ZomZom",
+            "undead": "Zombie"
+        },
+        {
+            "name": "Tonton",
+            "undead": "Skeleton"
+        },
+        {
+            "name": "Litlit",
+            "undead": "Lich"
+        }
+    ],
+    "cases": [
+        {
+            "description": "ZomZom attacks Tonton",
+            "attacker": "ZomZom",
+            "target": "Tonton",
+            "ability": "Attack",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 80,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Litlit casts spell on ZomZom",
+            "attacker": "Litlit",
+            "target": "ZomZom",
+            "ability": "Cast Spell",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 100,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 90,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Tonton attacks ZomZom",
+            "attacker": "Tonton",
+            "target": "ZomZom",
+            "ability": "Attack",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 79,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 90,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Litlit attacks ZomZom",
+            "attacker": "Litlit",
+            "target": "ZomZom",
+            "ability": "Attack",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 16,
+                    "is_dead": false,
+                    "can_attack": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 90,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "ZomZom eats Litlit",
+            "attacker": "ZomZom",
+            "target": "Litlit",
+            "ability": "Eat",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 61,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 90,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Litlit casts spell on ZomZom",
+            "attacker": "Litlit",
+            "target": "ZomZom",
+            "ability": "Cast Spell",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 61,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 96.1,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "ZomZom eats Tonton",
+            "attacker": "ZomZom",
+            "target": "Tonton",
+            "ability": "Eat",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 76,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 96.1,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Tonton attacks Litlit",
+            "attacker": "Tonton",
+            "target": "Litlit",
+            "ability": "Attack",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 76,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 75.1,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "Litlit casts spell on ZomZom",
+            "attacker": "Litlit",
+            "target": "ZomZom",
+            "ability": "Cast Spell",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 76,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 82.7,
+                    "is_dead": false
+                }
+            }
+        },
+        {
+            "description": "ZomZom eats Litlit",
+            "attacker": "ZomZom",
+            "target": "Litlit",
+            "ability": "Eat",
+            "expected_result": {
+                "ZomZom": {
+                    "hp": 117.35,
+                    "is_dead": false
+                },
+                "Tonton": {
+                    "hp": 30,
+                    "is_dead": false
+                },
+                "Litlit": {
+                    "hp": 82.7,
+                    "is_dead": false
+                }
+            }
+        }
+
+    ]
+}
