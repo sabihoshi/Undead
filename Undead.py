@@ -331,6 +331,7 @@ class Mummy(Zombie):
             }
         ]
 
+
     def attack(self, other_undead: 'Undead') -> float:
         damage = self.get_hp() * 0.5 + other_undead.get_hp() * 0.1
         return other_undead.take_damage(damage)

@@ -116,6 +116,7 @@ def game_menu() -> None:
                         list_except_chosen = [c for c in undead_list if c is not chosen]
 
                         command_undead(chosen, list_except_chosen)
+                        break
                     except (IndexError, TypeError):
                         print("Invalid choice, try again.")
             else:
